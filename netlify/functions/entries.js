@@ -9,6 +9,7 @@
 // GET               -> 전체 응답 목록 조회 (공개)
 // POST              -> 새 응답 등록 (name, team, pillar, reason, token 필요)
 //                      body.action === 'clear-all' 이면 관리자 전체삭제 (adminPassword 필요)
+//                      body.action === 'like' | 'unlike' 이면 공감 토글 (id, token 필요)
 // PUT               -> 본인 응답 수정 (id, token 일치해야 함)
 // DELETE            -> 본인 응답 삭제 (id, token 일치해야 함)
 
@@ -84,6 +85,29 @@ export default async (req, context) => {
         }
         await store.setJSON(KEY, []);
         return json(200, { ok: true });
+      }
+
+      // 공감(좋아요) 토글
+      if (body.action === 'like' || body.action === 'unlike') {
+        const { id, token: likeToken } = body;
+        if (!id || !likeToken) return json(400, { error: 'id와 token이 필요합니다.' });
+
+        const entries = await readEntries(store);
+        const idx = entries.findIndex((e) => e.id === id);
+        if (idx === -1) return json(404, { error: '응답을 찾을 수 없습니다.' });
+
+        const entry = entries[idx];
+        entry.likedBy = Array.isArray(entry.likedBy) ? entry.likedBy : [];
+        if (body.action === 'like') {
+          if (!entry.likedBy.includes(likeToken)) entry.likedBy.push(likeToken);
+        } else {
+          entry.likedBy = entry.likedBy.filter((t) => t !== likeToken);
+        }
+        entry.likes = entry.likedBy.length;
+        entries[idx] = entry;
+
+        await store.setJSON(KEY, entries);
+        return json(200, entry);
       }
 
       const { name, team, pillar, reason, token } = body;
