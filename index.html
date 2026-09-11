@@ -245,11 +245,15 @@
   async function loadEntries() {
     try {
       var res = await fetch(API, { cache: 'no-store' });
-      if (!res.ok) throw new Error('load failed');
-      entries = await res.json();
+      var data = await res.json().catch(function () { return null; });
+      if (!res.ok) {
+        var msg = (data && data.error) ? data.error : ('서버 오류 (' + res.status + ')');
+        throw new Error(msg);
+      }
+      entries = Array.isArray(data) ? data : [];
     } catch (e) {
       entries = [];
-      showToast('데이터를 불러오지 못했습니다. 잠시 후 새로고침 해주세요.');
+      showToast('데이터를 불러오지 못했습니다: ' + (e && e.message ? e.message : '알 수 없는 오류'));
     }
     render();
   }

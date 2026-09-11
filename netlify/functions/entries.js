@@ -8,7 +8,13 @@
 // PUT               -> 본인 응답 수정 (id, token 일치해야 함)
 // DELETE            -> 본인 응답 삭제 (id, token 일치해야 함)
 
-const { getStore } = require('@netlify/blobs');
+let getStore;
+let blobsLoadError = null;
+try {
+  getStore = require('@netlify/blobs').getStore;
+} catch (err) {
+  blobsLoadError = err;
+}
 
 const STORE_NAME = 'za2030-priority-board';
 const KEY = 'entries';
@@ -45,7 +51,22 @@ exports.handler = async (event) => {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
 
-  const store = getStore(STORE_NAME);
+  if (blobsLoadError) {
+    return json(500, {
+      error: '@netlify/blobs 모듈을 불러오지 못했습니다. package.json의 의존성 설치(npm install)가 배포 시 정상적으로 이루어졌는지 Netlify 배포 로그를 확인해 주세요.',
+      detail: String(blobsLoadError && blobsLoadError.message),
+    });
+  }
+
+  let store;
+  try {
+    store = getStore(STORE_NAME);
+  } catch (err) {
+    return json(500, {
+      error: 'Blobs 스토어를 초기화하지 못했습니다. (Netlify Blobs가 이 사이트에서 활성화되어 있는지 확인해 주세요)',
+      detail: String(err && err.message),
+    });
+  }
 
   try {
     if (event.httpMethod === 'GET') {
