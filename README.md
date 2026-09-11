@@ -30,20 +30,23 @@ ZA2030의 4가지 전략 축(Customer at the Core / Speed / Truly Global / High 
 **전체 삭제는 모든 팀의 데이터를 한 번에 지웁니다** (팀별 선택 삭제는 지원하지 않음).
 한 팀의 사용이 끝나고 다른 팀이 이어서 쓰기 전 초기화하는 용도로 사용하세요.
 
-## "데이터를 불러오지 못했습니다" 오류가 날 때 (502 에러 해결)
-함수(entries.js)가 `@netlify/blobs` 모듈을 불러오지 못해 502 오류가 나는 경우가 가장 흔합니다. 이번 파일에서는
-① 의존성 버전을 안정 버전(11.0.3)으로 고정하고, ② `netlify.toml`에 빌드 커맨드(`npm install`)와 번들러 설정을
-명시해서 배포 시 확실히 설치되도록 했습니다. 아래 순서로 다시 배포해 주세요.
+## "데이터를 불러오지 못했습니다" / "Blobs 스토어를 초기화하지 못했습니다" 오류 해결 이력
+- **1차 원인 추정**: `@netlify/blobs` 버전 범위가 애매해서(`^8.1.0`) 설치가 꼬였을 가능성 → 버전을 `11.0.3`으로 고정, 빌드 커맨드/번들러 명시 (해결 안 됨)
+- **실제 원인 (확인됨)**: `MissingBlobsEnvironmentError`. 기존 코드가 Netlify Functions **v1 방식**(`exports.handler`)으로 작성되어 있었는데,
+  Netlify Blobs의 "설정 없이 자동 인증"(zero-config)은 **v1 방식에서는 보장되지 않는 것으로 확인**되었습니다
+  (Netlify 공식 문서 및 커뮤니티 사례 다수 확인 — v1은 `connectLambda`를 수동 호출해야 하고, v2 방식은 자동으로 동작).
+- **적용한 수정**: `netlify/functions/entries.js`를 **Functions v2 방식**(`export default async (req, context) => {...}`,
+  표준 Request/Response 객체 사용)으로 다시 작성했습니다. v2에서는 Blobs 인증이 자동으로 주입되어 별도 설정이 필요 없습니다.
+  API 경로(`/api/entries`)와 요청/응답 형식은 이전과 동일하므로 화면(index.html) 쪽은 변경할 필요가 없습니다.
 
+재배포 순서:
 1. 이 zip의 파일들로 기존 GitHub 저장소 내용을 **전체 교체**한 뒤 commit & push
-   (특히 `package.json`, `netlify.toml`, `netlify/functions/entries.js`가 바뀌었습니다)
+   (`netlify/functions/entries.js`, `netlify.toml`이 바뀌었습니다 — `netlify.toml`의 `/api/*` 리다이렉트 규칙은
+   이제 함수 안의 `config.path`가 대신 처리하므로 제거되었습니다)
 2. Netlify 사이트 대시보드 → **Deploys** 탭 → 새 커밋이 자동으로 재배포되는지 확인 (안 되면 "Trigger deploy" 클릭)
-3. 배포가 끝나면 **Deploys → 해당 배포 클릭 → Deploy log**에서 `npm install` 단계가 정상적으로 실행되고
-   `@netlify/blobs`가 설치되었는지 확인
-4. 그래도 안 되면 **Functions 탭 → entries 함수 클릭 → 실시간 로그(Function log)**를 열고 사이트를 새로고침해서
-   실제 에러 메시지를 확인해 주세요. 이번 업데이트로 오류가 나도 화면에 구체적인 원인 메시지가 함께 표시됩니다
-   (예: "@netlify/blobs 모듈을 불러오지 못했습니다..." 처럼).
-5. 그 메시지를 그대로 알려주시면 원인을 정확히 짚어서 다시 고쳐드릴 수 있습니다.
+3. 배포 후 사이트를 새로고침해서 정상적으로 데이터가 뜨는지 확인
+4. 그래도 안 되면 **Functions 탭 → entries 함수 클릭 → 실시간 로그**를 확인하거나, 화면에 뜨는 에러 메시지를
+   그대로 알려주세요.
 
 ## 참여 방식 요약
 - 참여자는 이름 + 소속(팀) + 4가지 요소 중 하나를 선택하고 이유를 남깁니다.

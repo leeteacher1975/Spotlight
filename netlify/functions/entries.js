@@ -1,6 +1,10 @@
-// ZA2030 우리 팀의 핵심 요소 보드 — 서버리스 백엔드 (Netlify Functions + Netlify Blobs)
+// ZA2030 우리 팀의 핵심 요소 보드 — 서버리스 백엔드 (Netlify Functions v2 + Netlify Blobs)
 //
-// 엔드포인트: /.netlify/functions/entries  (netlify.toml에서 /api/entries 로 리다이렉트됨)
+// Functions v2(표준 Request/Response 방식)를 사용합니다. v1 방식(exports.handler)은
+// Netlify Blobs의 zero-config 자동 인증이 보장되지 않아 "MissingBlobsEnvironmentError"가
+// 발생할 수 있는 것으로 확인되어(Netlify 공식 문서 및 커뮤니티 사례 기준) v2로 작성했습니다.
+//
+// 엔드포인트: /api/entries (아래 config.path로 직접 매핑, /.netlify/functions/entries 로도 접근 가능)
 //
 // GET               -> 전체 응답 목록 조회 (공개)
 // POST              -> 새 응답 등록 (name, team, pillar, reason, token 필요)
@@ -8,13 +12,7 @@
 // PUT               -> 본인 응답 수정 (id, token 일치해야 함)
 // DELETE            -> 본인 응답 삭제 (id, token 일치해야 함)
 
-let getStore;
-let blobsLoadError = null;
-try {
-  getStore = require('@netlify/blobs').getStore;
-} catch (err) {
-  blobsLoadError = err;
-}
+import { getStore } from '@netlify/blobs';
 
 const STORE_NAME = 'za2030-priority-board';
 const KEY = 'entries';
@@ -37,8 +35,8 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
 };
 
-function json(statusCode, body) {
-  return { statusCode, headers: CORS_HEADERS, body: JSON.stringify(body) };
+function json(status, body) {
+  return new Response(JSON.stringify(body), { status, headers: CORS_HEADERS });
 }
 
 async function readEntries(store) {
@@ -46,16 +44,17 @@ async function readEntries(store) {
   return Array.isArray(data) ? data : [];
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+async function readJsonBody(req) {
+  try {
+    return await req.json();
+  } catch {
+    return null;
   }
+}
 
-  if (blobsLoadError) {
-    return json(500, {
-      error: '@netlify/blobs 모듈을 불러오지 못했습니다. package.json의 의존성 설치(npm install)가 배포 시 정상적으로 이루어졌는지 Netlify 배포 로그를 확인해 주세요.',
-      detail: String(blobsLoadError && blobsLoadError.message),
-    });
+export default async (req, context) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   let store;
@@ -69,18 +68,14 @@ exports.handler = async (event) => {
   }
 
   try {
-    if (event.httpMethod === 'GET') {
+    if (req.method === 'GET') {
       const entries = await readEntries(store);
       return json(200, entries);
     }
 
-    if (event.httpMethod === 'POST') {
-      let body;
-      try {
-        body = JSON.parse(event.body || '{}');
-      } catch {
-        return json(400, { error: '요청 형식이 올바르지 않습니다.' });
-      }
+    if (req.method === 'POST') {
+      const body = await readJsonBody(req);
+      if (!body) return json(400, { error: '요청 형식이 올바르지 않습니다.' });
 
       // 관리자 전체삭제
       if (body.action === 'clear-all') {
@@ -121,13 +116,10 @@ exports.handler = async (event) => {
       return json(200, entry);
     }
 
-    if (event.httpMethod === 'PUT') {
-      let body;
-      try {
-        body = JSON.parse(event.body || '{}');
-      } catch {
-        return json(400, { error: '요청 형식이 올바르지 않습니다.' });
-      }
+    if (req.method === 'PUT') {
+      const body = await readJsonBody(req);
+      if (!body) return json(400, { error: '요청 형식이 올바르지 않습니다.' });
+
       const { id, token, name, team, pillar, reason } = body;
       if (!id || !token) return json(400, { error: 'id와 token이 필요합니다.' });
       if (pillar && !VALID_PILLARS.includes(pillar)) {
@@ -152,13 +144,10 @@ exports.handler = async (event) => {
       return json(200, entries[idx]);
     }
 
-    if (event.httpMethod === 'DELETE') {
-      let body;
-      try {
-        body = JSON.parse(event.body || '{}');
-      } catch {
-        return json(400, { error: '요청 형식이 올바르지 않습니다.' });
-      }
+    if (req.method === 'DELETE') {
+      const body = await readJsonBody(req);
+      if (!body) return json(400, { error: '요청 형식이 올바르지 않습니다.' });
+
       const { id, token } = body;
       if (!id || !token) return json(400, { error: 'id와 token이 필요합니다.' });
 
@@ -176,4 +165,8 @@ exports.handler = async (event) => {
   } catch (err) {
     return json(500, { error: '서버 오류가 발생했습니다: ' + err.message });
   }
+};
+
+export const config = {
+  path: '/api/entries',
 };

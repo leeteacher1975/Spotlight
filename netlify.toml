@@ -6,8 +6,5 @@
 [functions]
   node_bundler = "esbuild"
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true
+# entries.js가 Functions v2의 config.path로 /api/entries를 직접 처리하므로
+# 별도의 리다이렉트 규칙은 필요하지 않습니다.
