@@ -49,6 +49,10 @@
   .btn-ghost { background: transparent; color: var(--ink-soft); padding: 4px 8px; font-size: 12px; }
   .btn-ghost:hover { color: var(--accent); }
   .btn-danger { background: #b3402f; color: #fff; }
+  .toolbar a.btn-primary {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    font-weight: 600; font-size: 14px; padding: 9px 16px; border-radius: 10px;
+  }
 
   .board {
     display: grid;
@@ -132,6 +136,7 @@
     <header class="top">
       <span class="zeiss-chip">ZEISS · ZA2030</span>
       <div class="toolbar">
+        <a href="evidence-hunt.html" class="btn-primary">🔍 Evidence Hunt 바로가기</a>
         <button class="btn-outline" id="csvBtn">CSV 다운로드</button>
       </div>
     </header>

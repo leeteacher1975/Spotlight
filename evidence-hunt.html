@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ZA2030 Evidence Hunt</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<style>
+  :root{
+    --bg:#F5F8FC;
+    --card:#FFFFFF;
+    --ink:#1C2733;
+    --ink-soft:#4B5768;
+    --border:#DCE6F2;
+    --accent:#1D4E89;
+    --accent-strong:#12345E;
+    --accent-tint:#E8F0FB;
+    --danger:#D64545;
+    --ok:#2E8B57;
+
+    --customer:#2D6CDF;
+    --customer-tint:#EAF1FE;
+    --speed:#E8871E;
+    --speed-tint:#FEF3E7;
+    --global:#1FA179;
+    --global-tint:#E7F7F1;
+    --highperf:#8E44AD;
+    --highperf-tint:#F3EAFA;
+
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --shadow:0 6px 20px rgba(29,78,137,0.10);
+    --shadow-sm:0 2px 8px rgba(29,78,137,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+    font-size:18px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px 60px;}
+
+  header.top{
+    background:linear-gradient(135deg,var(--accent) 0%,#2D6CDF 100%);
+    color:#fff;
+    padding:36px 20px 28px;
+    border-radius:0 0 28px 28px;
+    box-shadow:var(--shadow);
+    margin-bottom:24px;
+  }
+  header.top .inner{max-width:1400px;margin:0 auto;}
+  .zeiss-chip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.35);
+    padding:6px 14px;border-radius:999px;
+    font-weight:700;font-size:14px;letter-spacing:0.04em;
+    margin-bottom:14px;
+  }
+  header.top h1{font-size:clamp(26px,4vw,38px);margin:0 0 8px;font-weight:800;}
+  header.top p{margin:0;font-size:18px;color:rgba(255,255,255,0.92);max-width:760px;}
+
+  nav.tabs{
+    display:flex;gap:10px;flex-wrap:wrap;
+    margin:22px auto 0;max-width:1400px;padding:0 20px;
+  }
+  nav.tabs button{
+    font-family:inherit;font-size:17px;font-weight:700;
+    padding:13px 22px;border-radius:999px;border:2px solid var(--border);
+    background:#fff;color:var(--accent);cursor:pointer;
+    transition:all .15s ease;
+  }
+  nav.tabs button.active{
+    background:var(--accent);color:#fff;border-color:var(--accent);
+    box-shadow:var(--shadow-sm);
+  }
+  nav.tabs button:hover{transform:translateY(-1px);}
+  nav.tabs .admin-btn{
+    margin-left:auto;background:#fff;color:var(--ink-soft);border-color:var(--border);
+    font-size:22px;padding:10px 16px;
+  }
+  nav.tabs a.back-link{
+    display:inline-flex;align-items:center;
+    font-family:inherit;font-size:15px;font-weight:700;
+    padding:13px 20px;border-radius:999px;border:2px solid var(--border);
+    background:#fff;color:var(--ink-soft);text-decoration:none;
+    transition:all .15s ease;
+  }
+  nav.tabs a.back-link:hover{transform:translateY(-1px);color:var(--accent);}
+
+  section{display:none;}
+  section.active{display:block;}
+
+  /* ---- 작성 폼 ---- */
+  .form-card{
+    background:var(--card);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);padding:32px;margin-top:24px;
+    border:1px solid var(--border);
+  }
+  .quota-banner{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    background:var(--accent-tint);color:var(--accent-strong);
+    border-radius:var(--radius-md);padding:16px 20px;margin-bottom:24px;
+    font-weight:700;font-size:17px;
+  }
+  .quota-banner .count{font-size:20px;}
+  label{display:block;font-weight:700;font-size:17px;margin:20px 0 8px;color:var(--ink);}
+  label .req{color:var(--danger);margin-left:2px;}
+  label .hint{display:block;font-weight:500;font-size:15px;color:var(--ink-soft);margin-top:3px;}
+  input[type=text], select, textarea{
+    width:100%;font-family:inherit;font-size:17px;color:var(--ink);
+    padding:14px 16px;border-radius:var(--radius-sm);border:2px solid var(--border);
+    background:#fff;resize:vertical;
+  }
+  input[type=text]:focus, select:focus, textarea:focus{
+    outline:none;border-color:var(--accent);
+  }
+  textarea{min-height:88px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:640px){.row2{grid-template-columns:1fr;}}
+  .charcount{text-align:right;font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  .submit-btn{
+    margin-top:26px;width:100%;padding:17px;border:none;border-radius:999px;
+    background:var(--accent);color:#fff;font-size:19px;font-weight:800;
+    cursor:pointer;box-shadow:var(--shadow-sm);
+  }
+  .submit-btn:disabled{background:#B9C6D6;cursor:not-allowed;}
+  .submit-btn:hover:not(:disabled){background:var(--accent-strong);}
+  .form-msg{margin-top:14px;font-weight:700;font-size:16px;}
+  .form-msg.error{color:var(--danger);}
+  .form-msg.ok{color:var(--ok);}
+
+  .mine-wrap{margin-top:30px;}
+  .mine-wrap h3{font-size:19px;margin-bottom:12px;}
+  .mine-card{
+    border:2px solid var(--border);border-radius:var(--radius-md);
+    padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:12px;background:#FBFDFF;
+  }
+  .mine-card .txt{font-size:16px;color:var(--ink-soft);}
+  .mine-card .txt b{color:var(--ink);}
+  .mine-del{
+    border:none;background:var(--danger);color:#fff;border-radius:999px;
+    padding:8px 16px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;
+  }
+
+  /* ---- 보드 ---- */
+  .board-toolbar{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    margin:24px 0 18px;
+  }
+  .board-toolbar .stats{font-size:17px;font-weight:700;color:var(--ink-soft);}
+  .live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ok);margin-right:8px;
+    animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%{opacity:1;}50%{opacity:.35;}100%{opacity:1;}}
+  .csv-btn{
+    border:2px solid var(--accent);background:#fff;color:var(--accent);
+    font-weight:700;font-size:15px;padding:10px 18px;border-radius:999px;cursor:pointer;
+  }
+  .csv-btn:hover{background:var(--accent-tint);}
+
+  .board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  @media (max-width:1100px){.board-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:640px){.board-grid{grid-template-columns:1fr;}}
+
+  .col{
+    background:var(--card);border-radius:var(--radius-lg);
+    border:1px solid var(--border);box-shadow:var(--shadow-sm);
+    display:flex;flex-direction:column;min-height:220px;max-height:78vh;
+  }
+  .col-head{
+    padding:18px 18px 14px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+    color:#fff;font-weight:800;font-size:18px;
+  }
+  .col-head .n{font-weight:700;font-size:14px;opacity:.9;display:block;margin-top:2px;}
+  .col[data-pillar=customer] .col-head{background:var(--customer);}
+  .col[data-pillar=speed] .col-head{background:var(--speed);}
+  .col[data-pillar=global] .col-head{background:var(--global);}
+  .col[data-pillar=highperf] .col-head{background:var(--highperf);}
+  .col-body{padding:14px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
+  .empty-note{color:var(--ink-soft);font-size:15px;text-align:center;padding:20px 10px;}
+
+  .entry-card{
+    border-radius:var(--radius-md);padding:16px;border:2px solid var(--border);
+  }
+  .col[data-pillar=customer] .entry-card{background:var(--customer-tint);border-color:#CFE0FB;}
+  .col[data-pillar=speed] .entry-card{background:var(--speed-tint);border-color:#F8DDBB;}
+  .col[data-pillar=global] .entry-card{background:var(--global-tint);border-color:#C7EBDC;}
+  .col[data-pillar=highperf] .entry-card{background:var(--highperf-tint);border-color:#E4CBF3;}
+
+  .entry-card .who{font-weight:800;font-size:16px;margin-bottom:4px;}
+  .entry-card .who .team{font-weight:600;color:var(--ink-soft);font-size:14px;}
+  .entry-card .tag{
+    display:inline-block;background:rgba(0,0,0,0.06);border-radius:8px;
+    padding:5px 10px;font-size:13px;font-weight:700;margin:6px 0 10px;
+    color:var(--ink);
+  }
+  .entry-card .field{margin-bottom:8px;font-size:15px;}
+  .entry-card .field .k{font-weight:700;color:var(--ink-soft);font-size:13px;display:block;margin-bottom:2px;}
+  .entry-card .field .v{color:var(--ink);}
+  .entry-card .card-foot{
+    display:flex;justify-content:flex-end;align-items:center;margin-top:8px;gap:8px;
+  }
+  .like-btn{
+    border:none;background:#fff;border-radius:999px;padding:7px 14px;
+    font-weight:800;font-size:14px;cursor:pointer;box-shadow:var(--shadow-sm);
+    color:var(--ink);
+  }
+  .like-btn.liked{background:#FFE3E3;color:#D64545;}
+
+  /* ---- admin modal ---- */
+  .modal-backdrop{
+    display:none;position:fixed;inset:0;background:rgba(20,30,45,0.55);
+    align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .modal-backdrop.show{display:flex;}
+  .modal{
+    background:#fff;border-radius:var(--radius-lg);padding:28px;max-width:420px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+  }
+  .modal h3{margin-top:0;font-size:21px;}
+  .modal input{margin-top:8px;}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .modal-actions button{flex:1;padding:13px;border-radius:999px;font-weight:800;font-size:15px;border:none;cursor:pointer;}
+  .btn-cancel{background:var(--border);color:var(--ink);}
+  .btn-danger{background:var(--danger);color:#fff;}
+  .modal-msg{margin-top:12px;font-size:14px;font-weight:700;color:var(--danger);}
+
+  footer{
+    text-align:center;color:var(--ink-soft);font-size:14px;margin-top:50px;padding-bottom:10px;
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <span class="zeiss-chip">ZEISS · ZA2030</span>
+    <h1>Evidence Hunt — 우리가 이미 하고 있는 Agenda 2030</h1>
+    <p>최근 프로젝트·고객·업무 속에서 Agenda 2030을 실천한 사례를 적어보고, 팀 전체와 함께 나눠보세요.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button id="tabWriteBtn" class="active">✍️ 사례 작성하기</button>
+    <button id="tabBoardBtn">📋 함께 보기</button>
+    <a href="index.html" class="back-link">← 핵심 요소 보드로</a>
+    <button id="adminBtn" class="admin-btn" title="관리자">⚙️</button>
+  </nav>
+
+  <!-- 작성 -->
+  <section id="writeView" class="active">
+    <div class="form-card">
+      <div class="quota-banner">
+        <span>내가 제출한 사례</span>
+        <span class="count" id="quotaCount">0 / 2</span>
+      </div>
+
+      <form id="entryForm">
+        <div class="row2">
+          <div>
+            <label>이름<span class="req">*</span></label>
+            <input type="text" id="fName" maxlength="40" required placeholder="예: 이지영" />
+          </div>
+          <div>
+            <label>소속(팀)<span class="req">*</span></label>
+            <input type="text" id="fTeam" maxlength="40" required placeholder="예: SSC IT/Data팀" />
+          </div>
+        </div>
+
+        <label>2. 어떤 Agenda 2030 요소와 연결되는가?<span class="req">*</span>
+          <span class="hint">가장 가깝다고 생각하는 구체적인 행동 하나를 골라주세요.</span>
+        </label>
+        <select id="fBehavior" required></select>
+
+        <label>1. 무엇을 했는가?<span class="req">*</span>
+          <span class="hint">최근 프로젝트/고객/업무에서의 구체적인 행동이나 사례</span>
+        </label>
+        <textarea id="fWhat" maxlength="300" required placeholder="예: 고객 요구사항을 사전에 파악해 제안서 방향을 두 번 수정했습니다."></textarea>
+        <div class="charcount"><span id="cWhat">0</span>/300</div>
+
+        <label>3. 고객·사업·팀에 어떤 가치/영향을 만들었는가?
+          <span class="hint">결과나 변화, 혹은 기대되는 효과</span>
+        </label>
+        <textarea id="fValue" maxlength="300" placeholder="예: 재작업이 줄고 고객 만족도가 높아졌습니다."></textarea>
+        <div class="charcount"><span id="cValue">0</span>/300</div>
+
+        <label>4. 우리가 더 잘할 수 있는 것은 무엇인가?
+          <span class="hint">아쉬운 점이나 다음에 시도해보고 싶은 것</span>
+        </label>
+        <textarea id="fImprove" maxlength="300" placeholder="예: 더 일찍 팀에 공유했다면 좋았을 것 같습니다."></textarea>
+        <div class="charcount"><span id="cImprove">0</span>/300</div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">사례 제출하기</button>
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+
+      <div class="mine-wrap" id="mineWrap" style="display:none;">
+        <h3>내가 제출한 사례</h3>
+        <div id="mineList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 보드 -->
+  <section id="boardView">
+    <div class="board-toolbar">
+      <div class="stats"><span class="live-dot"></span><span id="statsText">불러오는 중…</span></div>
+      <button class="csv-btn" id="csvBtn">⬇ CSV 다운로드</button>
+    </div>
+    <div class="board-grid" id="boardGrid"></div>
+  </section>
+</div>
+
+<footer>© 2026 Joanna Lee. All rights reserved.</footer>
+
+<!-- 관리자 모달 -->
+<div class="modal-backdrop" id="adminModal">
+  <div class="modal">
+    <h3>⚙️ 관리자</h3>
+    <label>관리자 비밀번호</label>
+    <input type="text" id="adminPw" placeholder="비밀번호 입력" />
+    <div class="modal-actions">
+      <button class="btn-cancel" id="adminCancel">닫기</button>
+      <button class="btn-danger" id="adminClearAll">전체 삭제</button>
+    </div>
+    <div class="modal-msg" id="adminMsg"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const API = '/api/evidence-hunt';
+
+  const PILLARS = [
+    { key:'customer', name:'Customer at the core', color:'customer' },
+    { key:'speed', name:'Speed', color:'speed' },
+    { key:'global', name:'Truly global', color:'global' },
+    { key:'highperf', name:'High-performance Team ZEISS', color:'highperf' },
+  ];
+
+  const BEHAVIORS = [
+    { id:'customer-1', pillar:'customer', text:'무엇이 고객을 성공하게 만드는지 이해합니다.' },
+    { id:'customer-2', pillar:'customer', text:'고객에 대한 통찰을 가치 있는 솔루션으로 전환합니다.' },
+    { id:'customer-3', pillar:'customer', text:'팀 간의 협력을 통해 탁월한 고객 경험을 제공합니다.' },
+    { id:'speed-1', pillar:'speed', text:'업무 및 고객과 가장 가까운 사람들을 신뢰합니다.' },
+    { id:'speed-2', pillar:'speed', text:'선택을 명확히 하고, 전념하며 실행합니다.' },
+    { id:'speed-3', pillar:'speed', text:'작은 실험들을 시도하고, 빠르게 배우며 조정합니다.' },
+    { id:'global-1', pillar:'global', text:'다양한 관점을 수용하고 활용합니다.' },
+    { id:'global-2', pillar:'global', text:'다양성을 갖춘 팀을 구축하고 지역을 넘나들며 협업합니다.' },
+    { id:'global-3', pillar:'global', text:'어디서든 최고의 아이디어를 찾아 공유하고 채택합니다.' },
+    { id:'highperf-1', pillar:'highperf', text:'책임감을 가집니다. 부족한 부분(Gap)은 조기에 해결합니다.' },
+    { id:'highperf-2', pillar:'highperf', text:'성과 달성을 위해 서로를 지원하고, 훌륭한 업무 성과를 축하합니다.' },
+    { id:'highperf-3', pillar:'highperf', text:'솔직한 피드백을 주고받으며, 누구나 안심하고 의견을 말할 수 있는 환경을 만듭니다.' },
+  ];
+  const behaviorMap = Object.fromEntries(BEHAVIORS.map(b=>[b.id,b]));
+  const pillarMap = Object.fromEntries(PILLARS.map(p=>[p.key,p]));
+
+  // device token
+  let deviceToken = localStorage.getItem('za2030_eh_token');
+  if(!deviceToken){
+    deviceToken = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random());
+    localStorage.setItem('za2030_eh_token', deviceToken);
+  }
+  let likedIds = JSON.parse(localStorage.getItem('za2030_eh_liked') || '[]');
+  function saveLiked(){ localStorage.setItem('za2030_eh_liked', JSON.stringify(likedIds)); }
+
+  // ---- tabs ----
+  const tabWriteBtn = document.getElementById('tabWriteBtn');
+  const tabBoardBtn = document.getElementById('tabBoardBtn');
+  const writeView = document.getElementById('writeView');
+  const boardView = document.getElementById('boardView');
+  let pollTimer = null;
+
+  function showWrite(){
+    tabWriteBtn.classList.add('active'); tabBoardBtn.classList.remove('active');
+    writeView.classList.add('active'); boardView.classList.remove('active');
+    stopPolling();
+    refreshMine();
+  }
+  function showBoard(){
+    tabBoardBtn.classList.add('active'); tabWriteBtn.classList.remove('active');
+    boardView.classList.add('active'); writeView.classList.remove('active');
+    loadBoard();
+    startPolling();
+  }
+  tabWriteBtn.addEventListener('click', showWrite);
+  tabBoardBtn.addEventListener('click', showBoard);
+
+  function startPolling(){
+    stopPolling();
+    pollTimer = setInterval(()=>{ if(!document.hidden) loadBoard(); }, 5000);
+  }
+  function stopPolling(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden && boardView.classList.contains('active')) loadBoard();
+  });
+
+  // ---- populate select ----
+  const fBehavior = document.getElementById('fBehavior');
+  fBehavior.innerHTML = '<option value="">— 선택해주세요 —</option>' + PILLARS.map(p=>{
+    const opts = BEHAVIORS.filter(b=>b.pillar===p.key).map(b=>`<option value="${b.id}">${b.text}</option>`).join('');
+    return `<optgroup label="${p.name}">${opts}</optgroup>`;
+  }).join('');
+
+  // char counters
+  function bindCounter(inputId, counterId){
+    const el = document.getElementById(inputId), c = document.getElementById(counterId);
+    el.addEventListener('input', ()=>{ c.textContent = el.value.length; });
+  }
+  bindCounter('fWhat','cWhat'); bindCounter('fValue','cValue'); bindCounter('fImprove','cImprove');
+
+  // ---- fetch all (shared) ----
+  let allEntriesCache = [];
+  async function fetchAll(){
+    const res = await fetch(API, { method:'GET' });
+    if(!res.ok) throw new Error('load failed');
+    allEntriesCache = await res.json();
+    return allEntriesCache;
+  }
+
+  // ---- mine / quota ----
+  const quotaCount = document.getElementById('quotaCount');
+  const submitBtn = document.getElementById('submitBtn');
+  const mineWrap = document.getElementById('mineWrap');
+  const mineList = document.getElementById('mineList');
+
+  async function refreshMine(){
+    try{
+      const entries = await fetchAll();
+      const mine = entries.filter(e=>e.deviceToken===deviceToken);
+      quotaCount.textContent = mine.length + ' / 2';
+      submitBtn.disabled = mine.length >= 2;
+      submitBtn.textContent = mine.length >= 2 ? '이미 2건을 제출했습니다' : '사례 제출하기';
+      if(mine.length){
+        mineWrap.style.display='block';
+        mineList.innerHTML = mine.map(e=>{
+          const b = behaviorMap[e.behaviorId];
+          return `<div class="mine-card">
+            <div class="txt"><b>${escapeHtml(b? b.text : '')}</b><br/>${escapeHtml(e.whatDidYouDo)}</div>
+            <button class="mine-del" data-id="${e.id}">삭제</button>
+          </div>`;
+        }).join('');
+        mineList.querySelectorAll('.mine-del').forEach(btn=>{
+          btn.addEventListener('click', async ()=>{
+            btn.disabled = true;
+            await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: btn.dataset.id, deviceToken }) });
+            refreshMine();
+          });
+        });
+      } else {
+        mineWrap.style.display='none';
+      }
+    }catch(err){ console.error(err); }
+  }
+
+  function escapeHtml(str){
+    return (str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---- submit ----
+  const formMsg = document.getElementById('formMsg');
+  document.getElementById('entryForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    formMsg.textContent=''; formMsg.className='form-msg';
+    const payload = {
+      name: document.getElementById('fName').value,
+      team: document.getElementById('fTeam').value,
+      behaviorId: fBehavior.value,
+      whatDidYouDo: document.getElementById('fWhat').value,
+      valueImpact: document.getElementById('fValue').value,
+      improvement: document.getElementById('fImprove').value,
+      deviceToken,
+    };
+    if(!payload.name.trim() || !payload.team.trim() || !payload.behaviorId || !payload.whatDidYouDo.trim()){
+      formMsg.textContent = '이름, 소속, 요소, 1번 항목은 필수입니다.'; formMsg.classList.add('error'); return;
+    }
+    submitBtn.disabled = true;
+    try{
+      const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if(!res.ok){ throw new Error(data.error || '제출 실패'); }
+      formMsg.textContent = '제출되었습니다. 감사합니다!'; formMsg.classList.add('ok');
+      document.getElementById('entryForm').reset();
+      ['cWhat','cValue','cImprove'].forEach(id=>document.getElementById(id).textContent='0');
+      refreshMine();
+    }catch(err){
+      formMsg.textContent = err.message || '오류가 발생했습니다.'; formMsg.classList.add('error');
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ---- board ----
+  const boardGrid = document.getElementById('boardGrid');
+  const statsText = document.getElementById('statsText');
+
+  function renderBoard(entries){
+    const total = entries.length;
+    const people = new Set(entries.map(e=>e.deviceToken)).size;
+    statsText.textContent = `총 ${total}건 · 참여 ${people}명`;
+
+    boardGrid.innerHTML = PILLARS.map(p=>{
+      const list = entries.filter(e=>{ const b = behaviorMap[e.behaviorId]; return b && b.pillar===p.key; })
+        .sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+      const cards = list.map(e=>{
+        const b = behaviorMap[e.behaviorId];
+        const liked = likedIds.includes(e.id);
+        return `<div class="entry-card">
+          <div class="who">${escapeHtml(e.name)} <span class="team">· ${escapeHtml(e.team)}</span></div>
+          <span class="tag">${escapeHtml(b? b.text : '')}</span>
+          <div class="field"><span class="k">무엇을 했는가</span><span class="v">${escapeHtml(e.whatDidYouDo)}</span></div>
+          ${e.valueImpact ? `<div class="field"><span class="k">가치·영향</span><span class="v">${escapeHtml(e.valueImpact)}</span></div>` : ''}
+          ${e.improvement ? `<div class="field"><span class="k">더 잘할 수 있는 것</span><span class="v">${escapeHtml(e.improvement)}</span></div>` : ''}
+          <div class="card-foot">
+            <button class="like-btn ${liked?'liked':''}" data-id="${e.id}">${liked?'❤️':'🤍'} 공감 ${e.likes||0}</button>
+          </div>
+        </div>`;
+      }).join('') || `<div class="empty-note">아직 등록된 사례가 없습니다.</div>`;
+
+      return `<div class="col" data-pillar="${p.key}">
+        <div class="col-head">${p.name}<span class="n">${list.length}건</span></div>
+        <div class="col-body">${cards}</div>
+      </div>`;
+    }).join('');
+
+    boardGrid.querySelectorAll('.like-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.id;
+        const isLiked = likedIds.includes(id);
+        const action = isLiked ? 'unlike' : 'like';
+        btn.disabled = true;
+        try{
+          const res = await fetch(API, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, deviceToken, action }) });
+          const data = await res.json();
+          if(res.ok){
+            if(isLiked){ likedIds = likedIds.filter(x=>x!==id); } else { likedIds.push(id); }
+            saveLiked();
+            loadBoard();
+          }
+        }catch(err){ console.error(err); }
+        btn.disabled = false;
+      });
+    });
+  }
+
+  async function loadBoard(){
+    try{
+      const entries = await fetchAll();
+      renderBoard(entries);
+    }catch(err){
+      statsText.textContent = '불러오기 실패 — 잠시 후 다시 시도합니다.';
+    }
+  }
+
+  // ---- CSV ----
+  document.getElementById('csvBtn').addEventListener('click', async ()=>{
+    try{
+      const entries = await fetchAll();
+      const header = ['소속','이름','연결된 요소(대분류)','세부 행동','무엇을 했는가','가치/영향','더 잘할 수 있는 것','공감수','제출일시'];
+      const rows = entries.map(e=>{
+        const b = behaviorMap[e.behaviorId];
+        const p = b ? pillarMap[b.pillar] : null;
+        return [e.team, e.name, p?p.name:'', b?b.text:'', e.whatDidYouDo, e.valueImpact||'', e.improvement||'', e.likes||0, e.createdAt]
+          .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',');
+      });
+      const csv = '﻿' + [header.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'za2030_evidence_hunt.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }catch(err){ alert('CSV 다운로드에 실패했습니다.'); }
+  });
+
+  // ---- admin ----
+  const adminModal = document.getElementById('adminModal');
+  const adminMsg = document.getElementById('adminMsg');
+  document.getElementById('adminBtn').addEventListener('click', ()=>{
+    adminMsg.textContent=''; document.getElementById('adminPw').value='';
+    adminModal.classList.add('show');
+  });
+  document.getElementById('adminCancel').addEventListener('click', ()=> adminModal.classList.remove('show'));
+  adminModal.addEventListener('click', (e)=>{ if(e.target===adminModal) adminModal.classList.remove('show'); });
+  document.getElementById('adminClearAll').addEventListener('click', async ()=>{
+    const pw = document.getElementById('adminPw').value;
+    if(!pw){ adminMsg.textContent='비밀번호를 입력해주세요.'; return; }
+    if(!confirm('정말 모든 응답을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    try{
+      const res = await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ adminToken: pw }) });
+      const data = await res.json();
+      if(!res.ok){ adminMsg.textContent = data.error || '삭제 실패'; return; }
+      adminMsg.textContent = ''; adminModal.classList.remove('show');
+      loadBoard(); refreshMine();
+    }catch(err){ adminMsg.textContent = '오류가 발생했습니다.'; }
+  });
+
+  // init
+  refreshMine();
+})();
+</script>
+</body>
+</html>
