@@ -1,0 +1,9 @@
+{
+  "name": "za2030-priority-board",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ZA2030 우리 팀의 핵심 요소 보드 — 팀별 공유 대시보드",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

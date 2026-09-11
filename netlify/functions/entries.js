@@ -1,0 +1,158 @@
+// ZA2030 우리 팀의 핵심 요소 보드 — 서버리스 백엔드 (Netlify Functions + Netlify Blobs)
+//
+// 엔드포인트: /.netlify/functions/entries  (netlify.toml에서 /api/entries 로 리다이렉트됨)
+//
+// GET               -> 전체 응답 목록 조회 (공개)
+// POST              -> 새 응답 등록 (name, team, pillar, reason, token 필요)
+//                      body.action === 'clear-all' 이면 관리자 전체삭제 (adminPassword 필요)
+// PUT               -> 본인 응답 수정 (id, token 일치해야 함)
+// DELETE            -> 본인 응답 삭제 (id, token 일치해야 함)
+
+const { getStore } = require('@netlify/blobs');
+
+const STORE_NAME = 'za2030-priority-board';
+const KEY = 'entries';
+
+// 배포 시 Netlify 사이트 환경변수(ADMIN_TOKEN)를 반드시 설정하세요.
+// 설정하지 않으면 아래 기본값이 사용됩니다 (테스트용, 실사용 시 반드시 변경).
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'za2030admin';
+
+const VALID_PILLARS = [
+  'customer-at-the-core',
+  'speed',
+  'truly-global',
+  'high-performance-team',
+];
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Content-Type': 'application/json; charset=utf-8',
+};
+
+function json(statusCode, body) {
+  return { statusCode, headers: CORS_HEADERS, body: JSON.stringify(body) };
+}
+
+async function readEntries(store) {
+  const data = await store.get(KEY, { type: 'json' });
+  return Array.isArray(data) ? data : [];
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+  }
+
+  const store = getStore(STORE_NAME);
+
+  try {
+    if (event.httpMethod === 'GET') {
+      const entries = await readEntries(store);
+      return json(200, entries);
+    }
+
+    if (event.httpMethod === 'POST') {
+      let body;
+      try {
+        body = JSON.parse(event.body || '{}');
+      } catch {
+        return json(400, { error: '요청 형식이 올바르지 않습니다.' });
+      }
+
+      // 관리자 전체삭제
+      if (body.action === 'clear-all') {
+        if (typeof body.adminPassword !== 'string' || body.adminPassword !== ADMIN_TOKEN) {
+          return json(401, { error: '관리자 비밀번호가 올바르지 않습니다.' });
+        }
+        await store.setJSON(KEY, []);
+        return json(200, { ok: true });
+      }
+
+      const { name, team, pillar, reason, token } = body;
+      if (!name || !team || !pillar || !reason || !token) {
+        return json(400, { error: '이름, 소속, 선택 항목, 이유를 모두 입력해 주세요.' });
+      }
+      if (!VALID_PILLARS.includes(pillar)) {
+        return json(400, { error: '유효하지 않은 선택 항목입니다.' });
+      }
+
+      const entries = await readEntries(store);
+
+      // 1인 1픽: 같은 기기 토큰으로 이미 제출한 기록이 있으면 거부
+      if (entries.some((e) => e.token === token)) {
+        return json(409, { error: '이미 제출한 응답이 있습니다. 기존 응답을 수정하거나 삭제한 뒤 다시 시도해 주세요.' });
+      }
+
+      const entry = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+        name: String(name).trim().slice(0, 50),
+        team: String(team).trim().slice(0, 50),
+        pillar,
+        reason: String(reason).trim().slice(0, 1000),
+        token: String(token),
+        createdAt: new Date().toISOString(),
+      };
+
+      entries.push(entry);
+      await store.setJSON(KEY, entries);
+      return json(200, entry);
+    }
+
+    if (event.httpMethod === 'PUT') {
+      let body;
+      try {
+        body = JSON.parse(event.body || '{}');
+      } catch {
+        return json(400, { error: '요청 형식이 올바르지 않습니다.' });
+      }
+      const { id, token, name, team, pillar, reason } = body;
+      if (!id || !token) return json(400, { error: 'id와 token이 필요합니다.' });
+      if (pillar && !VALID_PILLARS.includes(pillar)) {
+        return json(400, { error: '유효하지 않은 선택 항목입니다.' });
+      }
+
+      const entries = await readEntries(store);
+      const idx = entries.findIndex((e) => e.id === id);
+      if (idx === -1) return json(404, { error: '응답을 찾을 수 없습니다.' });
+      if (entries[idx].token !== token) return json(403, { error: '수정 권한이 없습니다.' });
+
+      entries[idx] = {
+        ...entries[idx],
+        name: name !== undefined ? String(name).trim().slice(0, 50) : entries[idx].name,
+        team: team !== undefined ? String(team).trim().slice(0, 50) : entries[idx].team,
+        pillar: pillar !== undefined ? pillar : entries[idx].pillar,
+        reason: reason !== undefined ? String(reason).trim().slice(0, 1000) : entries[idx].reason,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await store.setJSON(KEY, entries);
+      return json(200, entries[idx]);
+    }
+
+    if (event.httpMethod === 'DELETE') {
+      let body;
+      try {
+        body = JSON.parse(event.body || '{}');
+      } catch {
+        return json(400, { error: '요청 형식이 올바르지 않습니다.' });
+      }
+      const { id, token } = body;
+      if (!id || !token) return json(400, { error: 'id와 token이 필요합니다.' });
+
+      const entries = await readEntries(store);
+      const idx = entries.findIndex((e) => e.id === id);
+      if (idx === -1) return json(404, { error: '응답을 찾을 수 없습니다.' });
+      if (entries[idx].token !== token) return json(403, { error: '삭제 권한이 없습니다.' });
+
+      entries.splice(idx, 1);
+      await store.setJSON(KEY, entries);
+      return json(200, { ok: true });
+    }
+
+    return json(405, { error: '지원하지 않는 요청입니다.' });
+  } catch (err) {
+    return json(500, { error: '서버 오류가 발생했습니다: ' + err.message });
+  }
+};
