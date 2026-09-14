@@ -7,14 +7,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
   :root {
-    --bg: #f2e9d8;
-    --card: #fffdf9;
-    --ink: #3a2f22;
-    --ink-soft: #7a6c58;
-    --line: #e3d5ba;
-    --accent: #0069b4;
+    --bg: #F5F8FC;
+    --card: #FFFFFF;
+    --ink: #1C2733;
+    --ink-soft: #4B5768;
+    --line: #DCE6F2;
+    --accent: #1D4E89;
+    --accent-strong: #12345E;
     --accent-ink: #ffffff;
-    --note-bg: #fffaf0;
+    --note-bg: #FBFDFF;
+
+    --customer: #2D6CDF; --customer-tint: #EAF1FE; --customer-line: #CFE0FB;
+    --speed: #E8871E; --speed-tint: #FEF3E7; --speed-line: #F8DDBB;
+    --global: #1FA179; --global-tint: #E7F7F1; --global-line: #C7EBDC;
+    --highperf: #8E44AD; --highperf-tint: #F3EAFA; --highperf-line: #E4CBF3;
   }
   * { box-sizing: border-box; }
   body {
@@ -25,18 +31,42 @@
     font-size: 18px;
     line-height: 1.55;
   }
-  .wrap { max-width: 1280px; margin: 0 auto; padding: 32px 20px 60px; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px 60px; }
 
-  header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 8px; }
+  header.top {
+    background: linear-gradient(135deg, var(--accent) 0%, #2D6CDF 100%);
+    color: #fff; padding: 36px 20px 28px; border-radius: 0 0 28px 28px;
+    box-shadow: 0 6px 20px rgba(29,78,137,0.10); margin-bottom: 20px;
+  }
+  header.top .inner { max-width: 1280px; margin: 0 auto; }
   .zeiss-chip {
     display: inline-flex; align-items: center; gap: 6px;
-    background: var(--accent); color: var(--accent-ink);
-    font-weight: 700; font-size: 15px; letter-spacing: .03em;
-    padding: 7px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.35);
+    color: #fff; font-weight: 700; font-size: 14px; letter-spacing: .03em;
+    padding: 6px 14px; border-radius: 999px; margin-bottom: 14px;
   }
-  h1 { font-size: 32px; margin: 6px 0 4px; font-weight: 800; }
-  .sub { color: var(--ink-soft); font-size: 17px; margin: 0 0 22px; }
-  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  h1 { font-size: clamp(26px, 4vw, 34px); margin: 0 0 8px; font-weight: 800; }
+  .sub { color: rgba(255,255,255,0.92); font-size: 17px; margin: 0; max-width: 760px; }
+
+  .flow-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 22px 0 6px; }
+  .flow-step {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 999px; border: 2px solid var(--line);
+    background: var(--card); color: var(--ink-soft); text-decoration: none;
+    font-weight: 700; font-size: 14.5px; transition: all .15s ease;
+  }
+  .flow-step .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--line);
+    color: var(--ink-soft); font-size: 12px; font-weight: 800;
+  }
+  .flow-step.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .flow-step.active .num { background: rgba(255,255,255,.28); color: #fff; }
+  .flow-step:hover { transform: translateY(-1px); }
+  .flow-arrow { color: var(--line); font-weight: 700; font-size: 16px; }
+  @media (max-width: 640px) { .flow-nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; } }
+
+  .toolbar-row { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin: 4px 0 4px; }
 
   button {
     font-family: inherit; cursor: pointer; border: none; border-radius: 10px;
@@ -50,10 +80,6 @@
   .btn-ghost { background: transparent; color: var(--ink-soft); padding: 6px 10px; font-size: 14px; }
   .btn-ghost:hover { color: var(--accent); }
   .btn-danger { background: #b3402f; color: #fff; }
-  .toolbar a.btn-primary {
-    display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
-    font-weight: 600; font-size: 16px; padding: 11px 18px; border-radius: 10px;
-  }
 
   .board {
     display: grid;
@@ -77,6 +103,19 @@
   .col-head h2 { font-size: 20px; margin: 8px 0 3px; font-weight: 800; }
   .col-head .kr { font-size: 14px; color: var(--ink-soft); font-weight: 600; margin-bottom: 8px; }
   .col-desc { font-size: 14.5px; color: var(--ink-soft); border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line); padding: 10px 0; margin-bottom: 12px; }
+
+  .col[data-pillar="customer"] { border-top: 4px solid var(--customer); }
+  .col[data-pillar="speed"] { border-top: 4px solid var(--speed); }
+  .col[data-pillar="global"] { border-top: 4px solid var(--global); }
+  .col[data-pillar="highperf"] { border-top: 4px solid var(--highperf); }
+  .col[data-pillar="customer"] .col-head h2 { color: var(--customer); }
+  .col[data-pillar="speed"] .col-head h2 { color: var(--speed); }
+  .col[data-pillar="global"] .col-head h2 { color: var(--global); }
+  .col[data-pillar="highperf"] .col-head h2 { color: var(--highperf); }
+  .col[data-pillar="customer"] .note { background: var(--customer-tint); border-color: var(--customer-line); }
+  .col[data-pillar="speed"] .note { background: var(--speed-tint); border-color: var(--speed-line); }
+  .col[data-pillar="global"] .note { background: var(--global-tint); border-color: var(--global-line); }
+  .col[data-pillar="highperf"] .note { background: var(--highperf-tint); border-color: var(--highperf-line); }
 
   .add-btn { width: 100%; margin-bottom: 12px; }
   .add-btn.mine { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
@@ -139,24 +178,34 @@
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <span class="zeiss-chip">ZEISS · ZA2030</span>
-      <div class="toolbar">
-        <a href="evidence-hunt.html" class="btn-primary">🔍 Evidence Hunt 바로가기</a>
-        <button class="btn-outline" id="csvBtn">CSV 다운로드</button>
-      </div>
-    </header>
+<header class="top">
+  <div class="inner">
+    <span class="zeiss-chip">ZEISS · ZA2030</span>
     <h1>우리 팀 성공의 핵심 요소</h1>
     <p class="sub">ZA2030의 4가지 전략 축 중, 우리 팀의 성공에 가장 중요하다고 생각하는 요소 <b>하나</b>를 선택하고 이유를 남겨주세요. 소속 팀 이름과 함께 기록되며, 다른 팀도 같은 화면을 함께 사용합니다. (1인 1건, 본인이 남긴 글은 직접 수정·삭제할 수 있습니다)</p>
-
-    <div class="board" id="board"></div>
-
-    <footer>
-      © <span id="year"></span> Joanna Lee. All rights reserved.
-      <div><button class="footer-admin" id="adminOpenBtn">관리자</button></div>
-    </footer>
   </div>
+</header>
+
+<div class="wrap">
+  <nav class="flow-nav" aria-label="세션 진행 순서">
+    <a href="index.html" class="flow-step active"><span class="num">1</span>핵심 요소</a>
+    <span class="flow-arrow">→</span>
+    <a href="evidence-hunt.html" class="flow-step"><span class="num">2</span>Evidence Hunt</a>
+    <span class="flow-arrow">→</span>
+    <a href="action-items.html" class="flow-step"><span class="num">3</span>액션 아이템</a>
+  </nav>
+
+  <div class="toolbar-row">
+    <button class="btn-outline" id="csvBtn">CSV 다운로드</button>
+  </div>
+
+  <div class="board" id="board"></div>
+</div>
+
+<footer>
+  © <span id="year"></span> Joanna Lee. All rights reserved.
+  <div><button class="footer-admin" id="adminOpenBtn">관리자</button></div>
+</footer>
 
   <!-- 응답 등록/수정 모달 -->
   <div class="overlay" id="entryOverlay">
@@ -221,6 +270,12 @@
   ];
 
   var API = '/api/entries';
+  var PILLAR_SHORT_KEY = {
+    'customer-at-the-core': 'customer',
+    'speed': 'speed',
+    'truly-global': 'global',
+    'high-performance-team': 'highperf'
+  };
   var board = document.getElementById('board');
   var toastEl = document.getElementById('toast');
   var entries = [];
@@ -285,6 +340,7 @@
     PILLARS.forEach(function (p) {
       var col = document.createElement('div');
       col.className = 'col';
+      col.setAttribute('data-pillar', PILLAR_SHORT_KEY[p.id] || '');
 
       var list = entries.filter(function (e) { return e.pillar === p.id; })
         .sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });

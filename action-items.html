@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ZA2030 Evidence Hunt</title>
+<title>ZA2030 액션 아이템</title>
 <link rel="stylesheet" as="style" crossorigin
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <style>
@@ -20,13 +20,9 @@
     --ok:#2E8B57;
 
     --customer:#2D6CDF;
-    --customer-tint:#EAF1FE;
     --speed:#E8871E;
-    --speed-tint:#FEF3E7;
     --global:#1FA179;
-    --global-tint:#E7F7F1;
     --highperf:#8E44AD;
-    --highperf-tint:#F3EAFA;
 
     --radius-lg:20px;
     --radius-md:14px;
@@ -44,7 +40,7 @@
     line-height:1.55;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1400px;margin:0 auto;padding:0 20px 60px;}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px 60px;}
 
   header.top{
     background:linear-gradient(135deg,var(--accent) 0%,#2D6CDF 100%);
@@ -54,7 +50,7 @@
     box-shadow:var(--shadow);
     margin-bottom:24px;
   }
-  header.top .inner{max-width:1400px;margin:0 auto;}
+  header.top .inner{max-width:1100px;margin:0 auto;}
   .zeiss-chip{
     display:inline-flex;align-items:center;gap:8px;
     background:rgba(255,255,255,0.16);
@@ -63,12 +59,12 @@
     font-weight:700;font-size:14px;letter-spacing:0.04em;
     margin-bottom:14px;
   }
-  header.top h1{font-size:clamp(26px,4vw,38px);margin:0 0 8px;font-weight:800;}
-  header.top p{margin:0;font-size:18px;color:rgba(255,255,255,0.92);max-width:760px;}
+  header.top h1{font-size:clamp(26px,4vw,34px);margin:0 0 8px;font-weight:800;}
+  header.top p{margin:0;font-size:17px;color:rgba(255,255,255,0.92);max-width:760px;}
 
   .flow-nav{
     display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-    margin:22px auto 0;max-width:1400px;padding:0 20px;
+    margin:22px auto 0;max-width:1100px;padding:0 20px;
   }
   .flow-step{
     display:inline-flex;align-items:center;gap:8px;
@@ -89,7 +85,7 @@
 
   nav.tabs{
     display:flex;gap:10px;flex-wrap:wrap;
-    margin:14px auto 0;max-width:1400px;padding:0 20px;
+    margin:14px auto 0;max-width:1100px;padding:0 20px;
   }
   nav.tabs button{
     font-family:inherit;font-size:17px;font-weight:700;
@@ -126,18 +122,29 @@
   label{display:block;font-weight:700;font-size:17px;margin:20px 0 8px;color:var(--ink);}
   label .req{color:var(--danger);margin-left:2px;}
   label .hint{display:block;font-weight:500;font-size:15px;color:var(--ink-soft);margin-top:3px;}
-  input[type=text], select, textarea{
+  input[type=text], textarea{
     width:100%;font-family:inherit;font-size:17px;color:var(--ink);
     padding:14px 16px;border-radius:var(--radius-sm);border:2px solid var(--border);
     background:#fff;resize:vertical;
   }
-  input[type=text]:focus, select:focus, textarea:focus{
-    outline:none;border-color:var(--accent);
-  }
+  input[type=text]:focus, textarea:focus{ outline:none;border-color:var(--accent); }
   textarea{min-height:88px;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   @media (max-width:640px){.row2{grid-template-columns:1fr;}}
   .charcount{text-align:right;font-size:13px;color:var(--ink-soft);margin-top:4px;}
+
+  .criteria-box{
+    border:2px solid var(--border);border-radius:var(--radius-md);
+    padding:16px 18px;margin-top:10px;background:#FBFDFF;
+  }
+  .criteria-box .cq{display:flex;align-items:flex-start;gap:12px;padding:8px 0;font-size:16px;}
+  .criteria-box .cq:not(:last-child){border-bottom:1px dashed var(--border);}
+  .criteria-box input[type=checkbox]{
+    width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--accent);cursor:pointer;
+  }
+  .criteria-box .cq .label{cursor:pointer;}
+  .criteria-box .cq .label b{display:block;font-size:16px;color:var(--ink);}
+  .criteria-box .cq .label span{display:block;font-size:14px;color:var(--ink-soft);margin-top:2px;}
 
   .submit-btn{
     margin-top:26px;width:100%;padding:17px;border:none;border-radius:999px;
@@ -173,60 +180,43 @@
   .live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ok);margin-right:8px;
     animation:pulse 1.6s infinite;}
   @keyframes pulse{0%{opacity:1;}50%{opacity:.35;}100%{opacity:1;}}
-  .csv-btn{
+  .board-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .sort-btn, .csv-btn{
     border:2px solid var(--accent);background:#fff;color:var(--accent);
     font-weight:700;font-size:15px;padding:10px 18px;border-radius:999px;cursor:pointer;
   }
-  .csv-btn:hover{background:var(--accent-tint);}
+  .sort-btn.active{background:var(--accent);color:#fff;}
+  .sort-btn:hover, .csv-btn:hover{background:var(--accent-tint);}
+  .sort-btn.active:hover{background:var(--accent-strong);}
 
-  .board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
-  @media (max-width:1100px){.board-grid{grid-template-columns:1fr 1fr;}}
-  @media (max-width:640px){.board-grid{grid-template-columns:1fr;}}
+  .item-list{display:flex;flex-direction:column;gap:16px;}
+  .empty-note{color:var(--ink-soft);font-size:16px;text-align:center;padding:40px 10px;}
 
-  .col{
-    background:var(--card);border-radius:var(--radius-lg);
-    border:1px solid var(--border);box-shadow:var(--shadow-sm);
-    display:flex;flex-direction:column;min-height:220px;max-height:78vh;
+  .item-card{
+    background:var(--card);border:2px solid var(--border);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);padding:20px 22px;
   }
-  .col-head{
-    padding:18px 18px 14px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
-    color:#fff;font-weight:800;font-size:18px;
+  .item-card .who{font-weight:800;font-size:16px;margin-bottom:6px;}
+  .item-card .who .team{font-weight:600;color:var(--ink-soft);font-size:14px;}
+  .item-card .action-text{font-size:19px;font-weight:700;color:var(--ink);margin:8px 0 14px;white-space:pre-wrap;word-break:break-word;}
+  .crit-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .crit-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:7px 13px;border-radius:999px;font-size:14px;font-weight:700;
+    border:2px solid var(--border);color:var(--ink-soft);background:#fff;
   }
-  .col-head .n{font-weight:700;font-size:14px;opacity:.9;display:block;margin-top:2px;}
-  .col[data-pillar=customer] .col-head{background:var(--customer);}
-  .col[data-pillar=speed] .col-head{background:var(--speed);}
-  .col[data-pillar=global] .col-head{background:var(--global);}
-  .col[data-pillar=highperf] .col-head{background:var(--highperf);}
-  .col-body{padding:14px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
-  .empty-note{color:var(--ink-soft);font-size:15px;text-align:center;padding:20px 10px;}
-
-  .entry-card{
-    border-radius:var(--radius-md);padding:16px;border:2px solid var(--border);
-  }
-  .col[data-pillar=customer] .entry-card{background:var(--customer-tint);border-color:#CFE0FB;}
-  .col[data-pillar=speed] .entry-card{background:var(--speed-tint);border-color:#F8DDBB;}
-  .col[data-pillar=global] .entry-card{background:var(--global-tint);border-color:#C7EBDC;}
-  .col[data-pillar=highperf] .entry-card{background:var(--highperf-tint);border-color:#E4CBF3;}
-
-  .entry-card .who{font-weight:800;font-size:16px;margin-bottom:4px;}
-  .entry-card .who .team{font-weight:600;color:var(--ink-soft);font-size:14px;}
-  .entry-card .tag{
-    display:inline-block;background:rgba(0,0,0,0.06);border-radius:8px;
-    padding:5px 10px;font-size:13px;font-weight:700;margin:6px 0 10px;
-    color:var(--ink);
-  }
-  .entry-card .field{margin-bottom:8px;font-size:15px;}
-  .entry-card .field .k{font-weight:700;color:var(--ink-soft);font-size:13px;display:block;margin-bottom:2px;}
-  .entry-card .field .v{color:var(--ink);}
-  .entry-card .card-foot{
-    display:flex;justify-content:flex-end;align-items:center;margin-top:8px;gap:8px;
+  .crit-chip.met{background:var(--accent-tint);border-color:var(--accent);color:var(--accent-strong);}
+  .card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .all-met-badge{
+    display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;
+    color:var(--ok);
   }
   .like-btn{
-    border:none;background:#fff;border-radius:999px;padding:7px 14px;
-    font-weight:800;font-size:14px;cursor:pointer;box-shadow:var(--shadow-sm);
-    color:var(--ink);
+    border:none;background:#fff;border-radius:999px;padding:9px 16px;
+    font-weight:800;font-size:15px;cursor:pointer;box-shadow:var(--shadow-sm);
+    color:var(--ink);border:2px solid var(--border);
   }
-  .like-btn.liked{background:#FFE3E3;color:#D64545;}
+  .like-btn.liked{background:#FFE3E3;color:#D64545;border-color:#F6C6C6;}
 
   /* ---- admin modal ---- */
   .modal-backdrop{
@@ -255,31 +245,31 @@
 <header class="top">
   <div class="inner">
     <span class="zeiss-chip">ZEISS · ZA2030</span>
-    <h1>Evidence Hunt — 우리가 이미 하고 있는 Agenda 2030</h1>
-    <p>최근 프로젝트·고객·업무 속에서 Agenda 2030을 실천한 사례를 적어보고, 팀 전체와 함께 나눠보세요.</p>
+    <h1>액션 아이템 — 우리 팀이 다음에 할 일</h1>
+    <p>오늘 나눈 이야기를 바탕으로, 우리 팀이 실제로 가져갈 액션 1~2개를 제안해주세요.</p>
   </div>
 </header>
 
+<nav class="flow-nav" aria-label="세션 진행 순서">
+  <a href="index.html" class="flow-step"><span class="num">1</span>핵심 요소</a>
+  <span class="flow-arrow">→</span>
+  <a href="evidence-hunt.html" class="flow-step"><span class="num">2</span>Evidence Hunt</a>
+  <span class="flow-arrow">→</span>
+  <a href="action-items.html" class="flow-step active"><span class="num">3</span>액션 아이템</a>
+</nav>
+
+<nav class="tabs">
+  <button id="tabWriteBtn" class="active">✍️ 액션 제안하기</button>
+  <button id="tabBoardBtn">📋 함께 보기</button>
+  <button id="adminBtn" class="admin-btn" title="관리자">⚙️</button>
+</nav>
+
 <div class="wrap">
-  <nav class="flow-nav" aria-label="세션 진행 순서">
-    <a href="index.html" class="flow-step"><span class="num">1</span>핵심 요소</a>
-    <span class="flow-arrow">→</span>
-    <a href="evidence-hunt.html" class="flow-step active"><span class="num">2</span>Evidence Hunt</a>
-    <span class="flow-arrow">→</span>
-    <a href="action-items.html" class="flow-step"><span class="num">3</span>액션 아이템</a>
-  </nav>
-
-  <nav class="tabs">
-    <button id="tabWriteBtn" class="active">✍️ 사례 작성하기</button>
-    <button id="tabBoardBtn">📋 함께 보기</button>
-    <button id="adminBtn" class="admin-btn" title="관리자">⚙️</button>
-  </nav>
-
   <!-- 작성 -->
   <section id="writeView" class="active">
     <div class="form-card">
       <div class="quota-banner">
-        <span>내가 제출한 사례</span>
+        <span>내가 제안한 액션</span>
         <span class="count" id="quotaCount">0 / 2</span>
       </div>
 
@@ -295,35 +285,34 @@
           </div>
         </div>
 
-        <label>2. 어떤 Agenda 2030 요소와 연결되는가?<span class="req">*</span>
-          <span class="hint">가장 가깝다고 생각하는 구체적인 행동 하나를 골라주세요.</span>
+        <label>우리 팀이 다음에 할 액션<span class="req">*</span>
+          <span class="hint">1~2개 중 하나를 구체적으로 적어주세요.</span>
         </label>
-        <select id="fBehavior" required></select>
+        <textarea id="fAction" maxlength="300" required placeholder="예: 월간 팀 회의에 '솔직한 피드백 5분' 코너를 신설한다."></textarea>
+        <div class="charcount"><span id="cAction">0</span>/300</div>
 
-        <label>1. 무엇을 했는가?<span class="req">*</span>
-          <span class="hint">최근 프로젝트/고객/업무에서의 구체적인 행동이나 사례</span>
-        </label>
-        <textarea id="fWhat" maxlength="300" required placeholder="예: 고객 요구사항을 사전에 파악해 제안서 방향을 두 번 수정했습니다."></textarea>
-        <div class="charcount"><span id="cWhat">0</span>/300</div>
+        <label>이 액션은 —</label>
+        <div class="criteria-box">
+          <label class="cq" for="cImpact">
+            <input type="checkbox" id="cImpact" />
+            <span class="label"><b>Impact — 의미 있는가?</b><span>이 액션이 실제로 의미 있는 변화를 만든다고 생각해요.</span></span>
+          </label>
+          <label class="cq" for="cControl">
+            <input type="checkbox" id="cControl" />
+            <span class="label"><b>Control — 우리가 바꿀 수 있는가?</b><span>우리 팀의 권한과 노력으로 실행할 수 있어요.</span></span>
+          </label>
+          <label class="cq" for="cFeasibility">
+            <input type="checkbox" id="cFeasibility" />
+            <span class="label"><b>Feasibility — 실제로 할 수 있는가?</b><span>현재 자원과 시간 내에서 실행 가능해요.</span></span>
+          </label>
+        </div>
 
-        <label>3. 고객·사업·팀에 어떤 가치/영향을 만들었는가?
-          <span class="hint">결과나 변화, 혹은 기대되는 효과</span>
-        </label>
-        <textarea id="fValue" maxlength="300" placeholder="예: 재작업이 줄고 고객 만족도가 높아졌습니다."></textarea>
-        <div class="charcount"><span id="cValue">0</span>/300</div>
-
-        <label>4. 우리가 더 잘할 수 있는 것은 무엇인가?
-          <span class="hint">아쉬운 점이나 다음에 시도해보고 싶은 것</span>
-        </label>
-        <textarea id="fImprove" maxlength="300" placeholder="예: 더 일찍 팀에 공유했다면 좋았을 것 같습니다."></textarea>
-        <div class="charcount"><span id="cImprove">0</span>/300</div>
-
-        <button type="submit" class="submit-btn" id="submitBtn">사례 제출하기</button>
+        <button type="submit" class="submit-btn" id="submitBtn">액션 제안하기</button>
         <div class="form-msg" id="formMsg"></div>
       </form>
 
       <div class="mine-wrap" id="mineWrap" style="display:none;">
-        <h3>내가 제출한 사례</h3>
+        <h3>내가 제안한 액션</h3>
         <div id="mineList"></div>
       </div>
     </div>
@@ -333,9 +322,13 @@
   <section id="boardView">
     <div class="board-toolbar">
       <div class="stats"><span class="live-dot"></span><span id="statsText">불러오는 중…</span></div>
-      <button class="csv-btn" id="csvBtn">⬇ CSV 다운로드</button>
+      <div class="board-actions">
+        <button class="sort-btn active" id="sortRecentBtn">최신순</button>
+        <button class="sort-btn" id="sortLikesBtn">공감순</button>
+        <button class="csv-btn" id="csvBtn">⬇ CSV 다운로드</button>
+      </div>
     </div>
-    <div class="board-grid" id="boardGrid"></div>
+    <div class="item-list" id="itemList"></div>
   </section>
 </div>
 
@@ -357,40 +350,16 @@
 
 <script>
 (function(){
-  const API = '/api/evidence-hunt';
-
-  const PILLARS = [
-    { key:'customer', name:'Customer at the core', color:'customer' },
-    { key:'speed', name:'Speed', color:'speed' },
-    { key:'global', name:'Truly global', color:'global' },
-    { key:'highperf', name:'High-performance Team ZEISS', color:'highperf' },
-  ];
-
-  const BEHAVIORS = [
-    { id:'customer-1', pillar:'customer', text:'무엇이 고객을 성공하게 만드는지 이해합니다.' },
-    { id:'customer-2', pillar:'customer', text:'고객에 대한 통찰을 가치 있는 솔루션으로 전환합니다.' },
-    { id:'customer-3', pillar:'customer', text:'팀 간의 협력을 통해 탁월한 고객 경험을 제공합니다.' },
-    { id:'speed-1', pillar:'speed', text:'업무 및 고객과 가장 가까운 사람들을 신뢰합니다.' },
-    { id:'speed-2', pillar:'speed', text:'선택을 명확히 하고, 전념하며 실행합니다.' },
-    { id:'speed-3', pillar:'speed', text:'작은 실험들을 시도하고, 빠르게 배우며 조정합니다.' },
-    { id:'global-1', pillar:'global', text:'다양한 관점을 수용하고 활용합니다.' },
-    { id:'global-2', pillar:'global', text:'다양성을 갖춘 팀을 구축하고 지역을 넘나들며 협업합니다.' },
-    { id:'global-3', pillar:'global', text:'어디서든 최고의 아이디어를 찾아 공유하고 채택합니다.' },
-    { id:'highperf-1', pillar:'highperf', text:'책임감을 가집니다. 부족한 부분(Gap)은 조기에 해결합니다.' },
-    { id:'highperf-2', pillar:'highperf', text:'성과 달성을 위해 서로를 지원하고, 훌륭한 업무 성과를 축하합니다.' },
-    { id:'highperf-3', pillar:'highperf', text:'솔직한 피드백을 주고받으며, 누구나 안심하고 의견을 말할 수 있는 환경을 만듭니다.' },
-  ];
-  const behaviorMap = Object.fromEntries(BEHAVIORS.map(b=>[b.id,b]));
-  const pillarMap = Object.fromEntries(PILLARS.map(p=>[p.key,p]));
+  const API = '/api/action-items';
 
   // device token
-  let deviceToken = localStorage.getItem('za2030_eh_token');
+  let deviceToken = localStorage.getItem('za2030_ai_token');
   if(!deviceToken){
     deviceToken = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random());
-    localStorage.setItem('za2030_eh_token', deviceToken);
+    localStorage.setItem('za2030_ai_token', deviceToken);
   }
-  let likedIds = JSON.parse(localStorage.getItem('za2030_eh_liked') || '[]');
-  function saveLiked(){ localStorage.setItem('za2030_eh_liked', JSON.stringify(likedIds)); }
+  let likedIds = JSON.parse(localStorage.getItem('za2030_ai_liked') || '[]');
+  function saveLiked(){ localStorage.setItem('za2030_ai_liked', JSON.stringify(likedIds)); }
 
   // ---- tabs ----
   const tabWriteBtn = document.getElementById('tabWriteBtn');
@@ -398,6 +367,7 @@
   const writeView = document.getElementById('writeView');
   const boardView = document.getElementById('boardView');
   let pollTimer = null;
+  let sortMode = 'recent'; // 'recent' | 'likes'
 
   function showWrite(){
     tabWriteBtn.classList.add('active'); tabBoardBtn.classList.remove('active');
@@ -423,19 +393,27 @@
     if(!document.hidden && boardView.classList.contains('active')) loadBoard();
   });
 
-  // ---- populate select ----
-  const fBehavior = document.getElementById('fBehavior');
-  fBehavior.innerHTML = '<option value="">— 선택해주세요 —</option>' + PILLARS.map(p=>{
-    const opts = BEHAVIORS.filter(b=>b.pillar===p.key).map(b=>`<option value="${b.id}">${b.text}</option>`).join('');
-    return `<optgroup label="${p.name}">${opts}</optgroup>`;
-  }).join('');
+  document.getElementById('sortRecentBtn').addEventListener('click', ()=>{
+    sortMode = 'recent';
+    document.getElementById('sortRecentBtn').classList.add('active');
+    document.getElementById('sortLikesBtn').classList.remove('active');
+    renderBoard(allEntriesCache);
+  });
+  document.getElementById('sortLikesBtn').addEventListener('click', ()=>{
+    sortMode = 'likes';
+    document.getElementById('sortLikesBtn').classList.add('active');
+    document.getElementById('sortRecentBtn').classList.remove('active');
+    renderBoard(allEntriesCache);
+  });
 
-  // char counters
-  function bindCounter(inputId, counterId){
-    const el = document.getElementById(inputId), c = document.getElementById(counterId);
-    el.addEventListener('input', ()=>{ c.textContent = el.value.length; });
+  // char counter
+  const fAction = document.getElementById('fAction');
+  const cAction = document.getElementById('cAction');
+  fAction.addEventListener('input', ()=>{ cAction.textContent = fAction.value.length; });
+
+  function escapeHtml(str){
+    return (str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-  bindCounter('fWhat','cWhat'); bindCounter('fValue','cValue'); bindCounter('fImprove','cImprove');
 
   // ---- fetch all (shared) ----
   let allEntriesCache = [];
@@ -458,13 +436,12 @@
       const mine = entries.filter(e=>e.deviceToken===deviceToken);
       quotaCount.textContent = mine.length + ' / 2';
       submitBtn.disabled = mine.length >= 2;
-      submitBtn.textContent = mine.length >= 2 ? '이미 2건을 제출했습니다' : '사례 제출하기';
+      submitBtn.textContent = mine.length >= 2 ? '이미 2건을 제안했습니다' : '액션 제안하기';
       if(mine.length){
         mineWrap.style.display='block';
         mineList.innerHTML = mine.map(e=>{
-          const b = behaviorMap[e.behaviorId];
           return `<div class="mine-card">
-            <div class="txt"><b>${escapeHtml(b? b.text : '')}</b><br/>${escapeHtml(e.whatDidYouDo)}</div>
+            <div class="txt"><b>${escapeHtml(e.actionText)}</b></div>
             <button class="mine-del" data-id="${e.id}">삭제</button>
           </div>`;
         }).join('');
@@ -481,10 +458,6 @@
     }catch(err){ console.error(err); }
   }
 
-  function escapeHtml(str){
-    return (str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
   // ---- submit ----
   const formMsg = document.getElementById('formMsg');
   document.getElementById('entryForm').addEventListener('submit', async (e)=>{
@@ -493,23 +466,23 @@
     const payload = {
       name: document.getElementById('fName').value,
       team: document.getElementById('fTeam').value,
-      behaviorId: fBehavior.value,
-      whatDidYouDo: document.getElementById('fWhat').value,
-      valueImpact: document.getElementById('fValue').value,
-      improvement: document.getElementById('fImprove').value,
+      actionText: fAction.value,
+      impact: document.getElementById('cImpact').checked,
+      control: document.getElementById('cControl').checked,
+      feasibility: document.getElementById('cFeasibility').checked,
       deviceToken,
     };
-    if(!payload.name.trim() || !payload.team.trim() || !payload.behaviorId || !payload.whatDidYouDo.trim()){
-      formMsg.textContent = '이름, 소속, 요소, 1번 항목은 필수입니다.'; formMsg.classList.add('error'); return;
+    if(!payload.name.trim() || !payload.team.trim() || !payload.actionText.trim()){
+      formMsg.textContent = '이름, 소속, 액션 내용은 필수입니다.'; formMsg.classList.add('error'); return;
     }
     submitBtn.disabled = true;
     try{
       const res = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       const data = await res.json();
       if(!res.ok){ throw new Error(data.error || '제출 실패'); }
-      formMsg.textContent = '제출되었습니다. 감사합니다!'; formMsg.classList.add('ok');
+      formMsg.textContent = '제안되었습니다. 감사합니다!'; formMsg.classList.add('ok');
       document.getElementById('entryForm').reset();
-      ['cWhat','cValue','cImprove'].forEach(id=>document.getElementById(id).textContent='0');
+      cAction.textContent = '0';
       refreshMine();
     }catch(err){
       formMsg.textContent = err.message || '오류가 발생했습니다.'; formMsg.classList.add('error');
@@ -518,39 +491,47 @@
   });
 
   // ---- board ----
-  const boardGrid = document.getElementById('boardGrid');
+  const itemList = document.getElementById('itemList');
   const statsText = document.getElementById('statsText');
 
   function renderBoard(entries){
+    entries = entries || [];
     const total = entries.length;
     const people = new Set(entries.map(e=>e.deviceToken)).size;
     statsText.textContent = `총 ${total}건 · 참여 ${people}명`;
 
-    boardGrid.innerHTML = PILLARS.map(p=>{
-      const list = entries.filter(e=>{ const b = behaviorMap[e.behaviorId]; return b && b.pillar===p.key; })
-        .sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
-      const cards = list.map(e=>{
-        const b = behaviorMap[e.behaviorId];
-        const liked = likedIds.includes(e.id);
-        return `<div class="entry-card">
-          <div class="who">${escapeHtml(e.name)} <span class="team">· ${escapeHtml(e.team)}</span></div>
-          <span class="tag">${escapeHtml(b? b.text : '')}</span>
-          <div class="field"><span class="k">무엇을 했는가</span><span class="v">${escapeHtml(e.whatDidYouDo)}</span></div>
-          ${e.valueImpact ? `<div class="field"><span class="k">가치·영향</span><span class="v">${escapeHtml(e.valueImpact)}</span></div>` : ''}
-          ${e.improvement ? `<div class="field"><span class="k">더 잘할 수 있는 것</span><span class="v">${escapeHtml(e.improvement)}</span></div>` : ''}
-          <div class="card-foot">
-            <button class="like-btn ${liked?'liked':''}" data-id="${e.id}">${liked?'❤️':'🤍'} 공감 ${e.likes||0}</button>
-          </div>
-        </div>`;
-      }).join('') || `<div class="empty-note">아직 등록된 사례가 없습니다.</div>`;
+    const sorted = entries.slice().sort((a,b)=>{
+      if(sortMode === 'likes'){
+        const diff = (b.likes||0) - (a.likes||0);
+        if(diff !== 0) return diff;
+      }
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
-      return `<div class="col" data-pillar="${p.key}">
-        <div class="col-head">${p.name}<span class="n">${list.length}건</span></div>
-        <div class="col-body">${cards}</div>
+    if(sorted.length === 0){
+      itemList.innerHTML = `<div class="empty-note">아직 제안된 액션이 없습니다.</div>`;
+      return;
+    }
+
+    itemList.innerHTML = sorted.map(e=>{
+      const liked = likedIds.includes(e.id);
+      const allMet = e.impact && e.control && e.feasibility;
+      return `<div class="item-card">
+        <div class="who">${escapeHtml(e.name)} <span class="team">· ${escapeHtml(e.team)}</span></div>
+        <div class="action-text">${escapeHtml(e.actionText)}</div>
+        <div class="crit-row">
+          <span class="crit-chip ${e.impact?'met':''}">${e.impact?'✅':'⬜'} Impact</span>
+          <span class="crit-chip ${e.control?'met':''}">${e.control?'✅':'⬜'} Control</span>
+          <span class="crit-chip ${e.feasibility?'met':''}">${e.feasibility?'✅':'⬜'} Feasibility</span>
+        </div>
+        <div class="card-foot">
+          <span class="all-met-badge">${allMet ? '🏆 3개 기준 모두 충족' : ''}</span>
+          <button class="like-btn ${liked?'liked':''}" data-id="${e.id}">${liked?'❤️':'🤍'} 공감 ${e.likes||0}</button>
+        </div>
       </div>`;
     }).join('');
 
-    boardGrid.querySelectorAll('.like-btn').forEach(btn=>{
+    itemList.querySelectorAll('.like-btn').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const id = btn.dataset.id;
         const isLiked = likedIds.includes(id);
@@ -558,7 +539,6 @@
         btn.disabled = true;
         try{
           const res = await fetch(API, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, deviceToken, action }) });
-          const data = await res.json();
           if(res.ok){
             if(isLiked){ likedIds = likedIds.filter(x=>x!==id); } else { likedIds.push(id); }
             saveLiked();
@@ -583,18 +563,16 @@
   document.getElementById('csvBtn').addEventListener('click', async ()=>{
     try{
       const entries = await fetchAll();
-      const header = ['소속','이름','연결된 요소(대분류)','세부 행동','무엇을 했는가','가치/영향','더 잘할 수 있는 것','공감수','제출일시'];
+      const header = ['소속','이름','액션 아이템','Impact','Control','Feasibility','공감수','제출일시'];
       const rows = entries.map(e=>{
-        const b = behaviorMap[e.behaviorId];
-        const p = b ? pillarMap[b.pillar] : null;
-        return [e.team, e.name, p?p.name:'', b?b.text:'', e.whatDidYouDo, e.valueImpact||'', e.improvement||'', e.likes||0, e.createdAt]
+        return [e.team, e.name, e.actionText, e.impact?'Y':'N', e.control?'Y':'N', e.feasibility?'Y':'N', e.likes||0, e.createdAt]
           .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',');
       });
       const csv = '﻿' + [header.join(','), ...rows].join('\r\n');
       const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'za2030_evidence_hunt.csv';
+      a.href = url; a.download = 'za2030_action_items.csv';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }catch(err){ alert('CSV 다운로드에 실패했습니다.'); }
@@ -612,7 +590,7 @@
   document.getElementById('adminClearAll').addEventListener('click', async ()=>{
     const pw = document.getElementById('adminPw').value;
     if(!pw){ adminMsg.textContent='비밀번호를 입력해주세요.'; return; }
-    if(!confirm('정말 모든 응답을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    if(!confirm('정말 모든 액션 제안을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
     try{
       const res = await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ adminToken: pw }) });
       const data = await res.json();
