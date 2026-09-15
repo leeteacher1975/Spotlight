@@ -6,6 +6,7 @@
 <title>ZA2030 액션 아이템</title>
 <link rel="stylesheet" as="style" crossorigin
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --bg:#F5F8FC;
@@ -237,6 +238,17 @@
   .btn-danger{background:var(--danger);color:#fff;}
   .modal-msg{margin-top:12px;font-size:14px;font-weight:700;color:var(--danger);}
 
+  .session-admin{margin-top:22px;padding-top:18px;border-top:1px dashed var(--border);}
+  .session-admin h4{margin:0 0 4px;font-size:15.5px;color:var(--accent-strong);}
+  .session-admin p{margin:0 0 12px;font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+  .session-admin .sa-buttons{display:flex;flex-direction:column;gap:10px;}
+  .session-admin button{width:100%;padding:13px;border-radius:999px;font-weight:800;font-size:14.5px;border:none;cursor:pointer;}
+  .sa-btn-download{background:var(--accent);color:#fff;}
+  .sa-btn-reset{background:#fff;color:var(--danger);border:2px solid var(--danger) !important;}
+  .sa-msg{margin-top:10px;font-size:13.5px;font-weight:700;}
+  .sa-msg.ok{color:var(--ok);}
+  .sa-msg.err{color:var(--danger);}
+
   footer{
     text-align:center;color:var(--ink-soft);font-size:14px;margin-top:50px;padding-bottom:10px;
   }
@@ -369,6 +381,16 @@
       <button class="btn-danger" id="adminClearAll">전체 삭제</button>
     </div>
     <div class="modal-msg" id="adminMsg"></div>
+
+    <div class="session-admin">
+      <h4>세션 전체 관리</h4>
+      <p>위 비밀번호로 핵심 요소·Evidence Hunt·액션 아이템 3개 보드를 한 번에 내려받거나 초기화합니다.</p>
+      <div class="sa-buttons">
+        <button type="button" class="sa-btn-download" id="exportAllBtn">⬇ 전체 세션 데이터 다운로드 (엑셀)</button>
+        <button type="button" class="sa-btn-reset" id="resetAllBtn">🗑 전체 초기화 (3개 보드 모두)</button>
+      </div>
+      <div class="sa-msg" id="saMsg"></div>
+    </div>
   </div>
 </div>
 
@@ -622,6 +644,129 @@
       adminMsg.textContent = ''; adminModal.classList.remove('show');
       loadBoard(); refreshMine();
     }catch(err){ adminMsg.textContent = '오류가 발생했습니다.'; }
+  });
+
+  // ---- 세션 전체 관리 (핵심 요소 + Evidence Hunt + 액션 아이템 통합 다운로드/초기화) ----
+  const ENTRIES_API = '/api/entries';
+  const EH_API = '/api/evidence-hunt';
+  const saMsg = document.getElementById('saMsg');
+
+  const PILLAR_LABELS = {
+    'customer-at-the-core': 'Customer at the Core (고객 중심)',
+    'speed': 'Speed (속도)',
+    'truly-global': 'Truly Global (진정한 글로벌)',
+    'high-performance-team': 'High Performance Team ZEISS (고성과 팀 ZEISS)'
+  };
+  const EH_PILLARS = {
+    customer: 'Customer at the core', speed: 'Speed',
+    global: 'Truly global', highperf: 'High-performance Team ZEISS'
+  };
+  const EH_BEHAVIORS = {
+    'customer-1':{pillar:'customer',text:'무엇이 고객을 성공하게 만드는지 이해합니다.'},
+    'customer-2':{pillar:'customer',text:'고객에 대한 통찰을 가치 있는 솔루션으로 전환합니다.'},
+    'customer-3':{pillar:'customer',text:'팀 간의 협력을 통해 탁월한 고객 경험을 제공합니다.'},
+    'speed-1':{pillar:'speed',text:'업무 및 고객과 가장 가까운 사람들을 신뢰합니다.'},
+    'speed-2':{pillar:'speed',text:'선택을 명확히 하고, 전념하며 실행합니다.'},
+    'speed-3':{pillar:'speed',text:'작은 실험들을 시도하고, 빠르게 배우며 조정합니다.'},
+    'global-1':{pillar:'global',text:'다양한 관점을 수용하고 활용합니다.'},
+    'global-2':{pillar:'global',text:'다양성을 갖춘 팀을 구축하고 지역을 넘나들며 협업합니다.'},
+    'global-3':{pillar:'global',text:'어디서든 최고의 아이디어를 찾아 공유하고 채택합니다.'},
+    'highperf-1':{pillar:'highperf',text:'책임감을 가집니다. 부족한 부분(Gap)은 조기에 해결합니다.'},
+    'highperf-2':{pillar:'highperf',text:'성과 달성을 위해 서로를 지원하고, 훌륭한 업무 성과를 축하합니다.'},
+    'highperf-3':{pillar:'highperf',text:'솔직한 피드백을 주고받으며, 누구나 안심하고 의견을 말할 수 있는 환경을 만듭니다.'}
+  };
+
+  function pad2sa(n){ return n < 10 ? '0'+n : ''+n; }
+
+  async function fetchJsonArray(url, opts){
+    const res = await fetch(url, opts);
+    if(!res.ok) throw new Error(url + ' (' + res.status + ')');
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }
+
+  function buildSessionWorkbook(entriesData, ehData, aiData){
+    const wb = XLSX.utils.book_new();
+
+    const s1 = [['소속(팀)','이름','선택 요소','이유','제출일시']].concat(
+      entriesData.map(e => [e.team, e.name, PILLAR_LABELS[e.pillar] || e.pillar, e.reason, e.createdAt])
+    );
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s1), '1.핵심요소');
+
+    const s2 = [['소속','이름','연결된 요소(대분류)','세부 행동','무엇을 했는가','가치/영향','더 잘할 수 있는 것','공감수','제출일시']].concat(
+      ehData.map(e => {
+        const b = EH_BEHAVIORS[e.behaviorId];
+        const pName = b ? (EH_PILLARS[b.pillar] || b.pillar) : '';
+        return [e.team, e.name, pName, b ? b.text : '', e.whatDidYouDo, e.valueImpact || '', e.improvement || '', e.likes || 0, e.createdAt];
+      })
+    );
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s2), '2.EvidenceHunt');
+
+    const s3 = [['소속','이름','액션 아이템','Impact','Control','Feasibility','공감수','제출일시']].concat(
+      aiData.map(e => [e.team, e.name, e.actionText, e.impact ? 'Y' : 'N', e.control ? 'Y' : 'N', e.feasibility ? 'Y' : 'N', e.likes || 0, e.createdAt])
+    );
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s3), '3.액션아이템');
+
+    return wb;
+  }
+
+  document.getElementById('exportAllBtn').addEventListener('click', async () => {
+    if(typeof XLSX === 'undefined'){
+      saMsg.className = 'sa-msg err';
+      saMsg.textContent = '엑셀 라이브러리를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
+      return;
+    }
+    saMsg.className = 'sa-msg';
+    saMsg.textContent = '데이터를 모으는 중...';
+    try{
+      const [entriesData, ehData, aiData] = await Promise.all([
+        fetchJsonArray(ENTRIES_API, { cache: 'no-store' }),
+        fetchJsonArray(EH_API, { cache: 'no-store' }),
+        fetchJsonArray(API, { cache: 'no-store' })
+      ]);
+      const wb = buildSessionWorkbook(entriesData, ehData, aiData);
+      const now = new Date();
+      const fname = 'ZA2030_spotlight-session_' + now.getFullYear() + pad2sa(now.getMonth()+1) + pad2sa(now.getDate())
+        + '-' + pad2sa(now.getHours()) + pad2sa(now.getMinutes()) + '.xlsx';
+      XLSX.writeFile(wb, fname);
+      saMsg.className = 'sa-msg ok';
+      saMsg.textContent = '다운로드가 시작되었습니다.';
+    }catch(err){
+      saMsg.className = 'sa-msg err';
+      saMsg.textContent = '데이터를 불러오는 중 오류가 발생했습니다.';
+    }
+  });
+
+  document.getElementById('resetAllBtn').addEventListener('click', async () => {
+    const pw = document.getElementById('adminPw').value;
+    if(!pw){ saMsg.className = 'sa-msg err'; saMsg.textContent = '비밀번호를 입력해주세요.'; return; }
+    if(!confirm('정말 핵심 요소·Evidence Hunt·액션 아이템 3개 보드의 데이터를 모두 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+
+    saMsg.className = 'sa-msg';
+    saMsg.textContent = '초기화하는 중...';
+    const results = await Promise.allSettled([
+      fetch(ENTRIES_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'clear-all', adminPassword: pw }) }),
+      fetch(EH_API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ adminToken: pw }) }),
+      fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ adminToken: pw }) })
+    ]);
+    const labels = ['핵심 요소', 'Evidence Hunt', '액션 아이템'];
+    const failed = [];
+    for(let i = 0; i < results.length; i++){
+      const r = results[i];
+      if(r.status !== 'fulfilled' || !r.value.ok) failed.push(labels[i]);
+    }
+    if(failed.length === 0){
+      saMsg.className = 'sa-msg ok';
+      saMsg.textContent = '3개 보드 모두 초기화되었습니다.';
+      loadBoard(); refreshMine();
+    } else if(failed.length === labels.length){
+      saMsg.className = 'sa-msg err';
+      saMsg.textContent = '초기화하지 못했습니다 — 비밀번호를 확인해주세요.';
+    } else {
+      saMsg.className = 'sa-msg err';
+      saMsg.textContent = failed.join(', ') + ' 보드는 초기화하지 못했습니다. 다시 시도해주세요.';
+      loadBoard(); refreshMine();
+    }
   });
 
   // init
